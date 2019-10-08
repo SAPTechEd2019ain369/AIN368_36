@@ -34,9 +34,65 @@
             this._shadowRoot = this.attachShadow({mode: 'open'});
             this._shadowRoot.appendChild(tmpl.content.cloneNode(true));
             this._svgContainer;
+            this.style.height = "100%";
+            this._outerRad = 0.0;
+            this._endAngleDeg = 0.0;
+            this._endAngleDegMax = 145.0;
+            this._startAngleDeg = -145.0;
+            const bcRect = this.getBoundingClientRect();
+            this._widgetHeight = bcRect.height;
+            this._widgetWidth = bcRect.width;
+
+            if (this._widgetHeight < this._widgetWidth){
+                this._widgetWidth = this._widgetHeight;
+               }
+
+               this.redraw();
+               
         };
-    
-    
+        redraw() {
+            if (!this._svgContainer){
+                this._svgContainer = window._d3.select(this._shadowRoot)
+                .append("svg:svg")
+                .attr("id", "gauge")
+                .attr("width", this._widgetWidth)
+                .attr("height", this._widgetWidth);
+               }
+            var pi = Math.PI;  
+            this._outerRad = (this._widgetWidth)/2;
+
+            var arcDef = window._d3.arc()
+            .innerRadius(0)
+            .outerRadius(this._outerRad);
+
+            var guageArc = this._svgContainer.append("path")
+            .datum({endAngle: this._endAngleDeg * (pi/180), startAngle: this._startAngleDeg * (pi/180)})
+            .style("fill", this._displayedColor)
+            .attr("width", this._widgetWidth).attr("height", this._widgetWidth) // Added height and width so arc is visible
+            .attr("transform", "translate(" + this._outerRad + "," + this._outerRad + ")")
+            .attr("d", arcDef)
+            .attr( "fill-opacity", this._gaugeOpacity );
+/////////////////////////////////////////// 
+//Lets build a border ring around the gauge
+///////////////////////////////////////////
+var visRing = window._d3.select(this._shadowRoot).append("svg:svg").attr("width", "100%").attr("height", "100%");
+ 
+var ringOuterRad = this._outerRad + ( -1 * this._ringThickness);  //Outer ring starts at the outer radius of the inner arc
+
+var ringArcDefinition = window._d3.arc()
+ .innerRadius(this._outerRad)
+ .outerRadius(ringOuterRad)
+ .startAngle(this._startAngleDeg * (pi/180)) //converting from degs to radians
+ .endAngle(this._endAngleDegMax * (pi/180)) //converting from degs to radians
+
+var ringArc = this._svgContainer
+ .append("path")
+ .attr("d", ringArcDefinition)
+ .attr("fill", this._ringColorCode)
+ .attr("transform", "translate(" + this._outerRad + "," + this._outerRad + ")");
+
+
+ 
     });
         
 })();
